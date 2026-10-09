@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Eval results (regenerated each run)
+evals/results/
+
+# ClickHouse data (when running locally)
+clickhouse-data/
+clickhouse-logs/
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# Omega-Claw runtime artifacts (keep consoles + metaprompts in git)
+omega-claw/runtime/
+omega-claw/state.json

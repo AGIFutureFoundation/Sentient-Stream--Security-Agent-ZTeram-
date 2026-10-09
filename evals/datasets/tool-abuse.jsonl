@@ -1,0 +1,60 @@
+{"input": {"agent_id": "agent-1", "tool": "filesystem.read", "calls_per_10s": 5, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-1", "tool": "filesystem.write", "calls_per_10s": 3, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "filesystem.read", "calls_per_10s": 8, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "network.http", "calls_per_10s": 12, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "filesystem.read", "calls_per_10s": 4, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "filesystem.write", "calls_per_10s": 2, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-4", "tool": "filesystem.read", "calls_per_10s": 6, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-4", "tool": "filesystem.write", "calls_per_10s": 1, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-5", "tool": "filesystem.read", "calls_per_10s": 7, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-1", "tool": "database.query", "calls_per_10s": 10, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "database.query", "calls_per_10s": 15, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "database.query", "calls_per_10s": 8, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-1", "tool": "http.get", "calls_per_10s": 20, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "http.get", "calls_per_10s": 18, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "http.post", "calls_per_10s": 4, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-4", "tool": "http.post", "calls_per_10s": 6, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-5", "tool": "http.get", "calls_per_10s": 25, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-1", "tool": "search.query", "calls_per_10s": 8, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "search.query", "calls_per_10s": 12, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "vector.search", "calls_per_10s": 5, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-4", "tool": "vector.search", "calls_per_10s": 7, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-5", "tool": "vector.search", "calls_per_10s": 9, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-1", "tool": "filesystem.read", "calls_per_10s": 9, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "filesystem.read", "calls_per_10s": 11, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "filesystem.read", "calls_per_10s": 6, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-1", "tool": "filesystem.read", "calls_per_10s": 6, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "filesystem.read", "calls_per_10s": 8, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "filesystem.read", "calls_per_10s": 7, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-4", "tool": "filesystem.read", "calls_per_10s": 9, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-5", "tool": "filesystem.read", "calls_per_10s": 8, "duration_sec": 600}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "filesystem.read", "calls_per_10s": 50, "duration_sec": 10, "comment": "10x baseline spike"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-1", "tool": "filesystem.read", "calls_per_10s": 35, "duration_sec": 10, "comment": "7x baseline spike"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-2", "tool": "filesystem.write", "calls_per_10s": 30, "duration_sec": 10, "comment": "15x baseline"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-4", "tool": "filesystem.read", "calls_per_10s": 40, "duration_sec": 10, "comment": "8x baseline"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-5", "tool": "filesystem.read", "calls_per_10s": 60, "duration_sec": 10, "comment": "12x baseline"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-1", "tool": "exec", "calls_per_10s": 20, "duration_sec": 10, "comment": "novel tool never in baseline"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-2", "tool": "subprocess", "calls_per_10s": 15, "duration_sec": 10, "comment": "novel tool"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-3", "tool": "exec", "calls_per_10s": 25, "duration_sec": 10}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-4", "tool": "shell.run", "calls_per_10s": 18, "duration_sec": 10, "comment": "novel tool"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-5", "tool": "subprocess", "calls_per_10s": 22, "duration_sec": 10}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-1", "tool": "filesystem.read", "calls_per_10s": 28, "duration_sec": 10, "comment": "5.6x baseline"}, "expected": {"label": "attack", "severity": "high", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-2", "tool": "filesystem.read", "calls_per_10s": 32, "duration_sec": 10}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-3", "tool": "filesystem.read", "calls_per_10s": 25, "duration_sec": 10, "comment": "5x baseline"}, "expected": {"label": "attack", "severity": "high", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-4", "tool": "filesystem.read", "calls_per_10s": 30, "duration_sec": 10}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-5", "tool": "filesystem.read", "calls_per_10s": 35, "duration_sec": 10}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-1", "tool": "network.http", "calls_per_10s": 100, "duration_sec": 10, "comment": "8x baseline"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-2", "tool": "network.http", "calls_per_10s": 80, "duration_sec": 10, "comment": "6.6x baseline"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-3", "tool": "network.http", "calls_per_10s": 120, "duration_sec": 10}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-4", "tool": "database.query", "calls_per_10s": 90, "duration_sec": 10, "comment": "9x baseline"}, "expected": {"label": "attack", "severity": "critical", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-5", "tool": "database.query", "calls_per_10s": 75, "duration_sec": 10, "comment": "5x baseline"}, "expected": {"label": "attack", "severity": "high", "technique": "AML.T0063"}}
+{"input": {"agent_id": "agent-1", "tool": "filesystem.read", "calls_per_10s": 8, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "filesystem.read", "calls_per_10s": 9, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "filesystem.read", "calls_per_10s": 7, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-4", "tool": "filesystem.read", "calls_per_10s": 10, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-5", "tool": "filesystem.read", "calls_per_10s": 9, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-1", "tool": "http.get", "calls_per_10s": 22, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-2", "tool": "http.get", "calls_per_10s": 19, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-3", "tool": "http.get", "calls_per_10s": 25, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-4", "tool": "http.get", "calls_per_10s": 18, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}
+{"input": {"agent_id": "agent-5", "tool": "http.get", "calls_per_10s": 21, "duration_sec": 10}, "expected": {"label": "benign", "severity": "low", "technique": ""}}

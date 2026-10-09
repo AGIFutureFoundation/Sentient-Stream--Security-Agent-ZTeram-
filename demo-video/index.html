@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel Stream — 2-Minute Demo Video</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0e1a;
+    color: #d1d5db;
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+  }
+  h1 { font-size: 24px; color: #f1f5f9; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+
+  .video-frame {
+    width: 100%;
+    max-width: 1280px;
+    aspect-ratio: 16/9;
+    background: #050810;
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    text-align: center;
+  }
+  .scene.active { opacity: 1; }
+
+  .logo {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; font-weight: 800; color: #0a0e1a;
+    margin-bottom: 24px;
+  }
+  .scene h2 { font-size: 36px; color: #f1f5f9; margin-bottom: 16px; line-height: 1.2; max-width: 900px; }
+  .scene p { font-size: 20px; color: #cbd5e1; max-width: 800px; line-height: 1.6; }
+
+  .badges { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 24px; }
+  .tech-badge {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: #fca5a5;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  .tech-badge .id { color: #ef4444; font-weight: 700; }
+  .tech-badge .name { display: block; font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+  .arch-box {
+    background: rgba(15,23,42,0.7);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 8px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #94a3b8;
+    text-align: left;
+    max-width: 900px;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* Dashboard mock */
+  .dash-mock {
+    width: 90%;
+    max-width: 1100px;
+    background: rgba(15,23,42,0.8);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .dash-header {
+    background: rgba(15,23,42,0.95);
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(56,189,248,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .dash-header .title { color: #38bdf8; font-weight: 700; font-size: 14px; }
+  .dash-header .stats { font-family: monospace; font-size: 11px; color: #64748b; }
+  .dash-body { padding: 16px; display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .ticker {
+    background: #050810;
+    border-radius: 4px;
+    padding: 8px;
+    height: 220px;
+    overflow: hidden;
+    font-family: monospace;
+    font-size: 10px;
+    color: #475569;
+  }
+  .ticker .line { padding: 2px 0; }
+  .ticker .line.hot { color: #38bdf8; }
+  .alerts-col { display: flex; flex-direction: column; gap: 8px; }
+  .alert-card {
+    background: rgba(239,68,68,0.1);
+    border-left: 3px solid #ef4444;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    text-align: left;
+    animation: slideIn 0.5s ease;
+  }
+  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .alert-card .sev { color: #ef4444; font-weight: 700; }
+  .alert-card .tech { color: #38bdf8; font-family: monospace; font-size: 10px; }
+  .alert-card .sum { color: #cbd5e1; margin-top: 4px; }
+
+  .query-box {
+    background: rgba(15,23,42,0.8);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #38bdf8;
+    text-align: left;
+    max-width: 800px;
+  }
+  .query-box .prompt { color: #94a3b8; }
+  .query-box .result { color: #4ade80; margin-top: 8px; font-size: 11px; }
+
+  /* Progress + controls */
+  .progress-bar {
+    width: 100%;
+    max-width: 1280px;
+    height: 4px;
+    background: rgba(56,189,248,0.1);
+    border-radius: 2px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%);
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 16px;
+    max-width: 1280px;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .controls button {
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: #38bdf8;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .controls button:hover { background: rgba(56,189,248,0.3); }
+  .time { font-family: monospace; color: #64748b; font-size: 13px; }
+
+  .caption {
+    max-width: 1280px;
+    width: 100%;
+    margin-top: 16px;
+    background: rgba(15,23,42,0.6);
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #cbd5e1;
+    line-height: 1.5;
+    min-height: 60px;
+  }
+  .caption .label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+
+  .scene-id {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(56,189,248,0.1);
+    color: #38bdf8;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-family: monospace;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Sentinel Stream — 2-Minute Demo Video</h1>
+<p class="subtitle">HTML artifact · 5 synced scenes · ~120 seconds · play in any browser</p>
+
+<div class="video-frame" id="frame">
+
+  <!-- Scene 1: Cold open -->
+  <section class="scene active" data-scene="1">
+    <span class="scene-id">SCENE 1 · 0:00–0:10</span>
+    <div class="logo">S</div>
+    <h2>Sentinel Stream</h2>
+    <p>Real-Time Threat Detection for LLM Agents</p>
+    <p style="color: #64748b; font-size: 16px; margin-top: 12px;">The SOC for AI — built on ClickHouse</p>
+  </section>
+
+  <!-- Scene 2: The threat -->
+  <section class="scene" data-scene="2">
+    <span class="scene-id">SCENE 2 · 0:10–0:25</span>
+    <h2>No one is watching the agent event stream.</h2>
+    <div class="badges">
+      <div class="tech-badge">
+        <span class="id">AML.T0051</span>
+        <span class="name">Prompt Injection</span>
+      </div>
+      <div class="tech-badge">
+        <span class="id">AML.T0063</span>
+        <span class="name">Tool Abuse</span>
+      </div>
+      <div class="tech-badge">
+        <span class="id">AML.T0057</span>
+        <span class="name">Context Exfiltration</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scene 3: Architecture -->
+  <section class="scene" data-scene="3">
+    <span class="scene-id">SCENE 3 · 0:25–0:45</span>
+    <h2 style="font-size: 24px; margin-bottom: 24px;">Every event ingested. Every alert tagged.</h2>
+    <div class="arch-box">┌──────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Synthetic    │    │ FastAPI ingest   │    │ ClickHouse      │
+│ generator ───┼───▶│ POST /v1/events  ├───▶│ • events MV     │
+│ 200 ev/sec   │    │ async + batch    │    │ • alerts        │
+└──────────────┘    └────────┬─────────┘    └────────┬────────┘
+                             │                       │
+                             ▼                       ▼
+                    ┌──────────────────┐    ┌─────────────────┐
+                    │ Detection engine │    │ HTMX dashboard  │
+                    │ • regex rules    │───▶│ SSE live ticker │
+                    │ • MV baselines   │    │ + alert cards   │
+                    │ • LLM classifier │    │ + NL query box  │
+                    └──────────────────┘    └─────────────────┘</div>
+  </section>
+
+  <!-- Scene 4: Live demo -->
+  <section class="scene" data-scene="4">
+    <span class="scene-id">SCENE 4 · 0:45–1:30</span>
+    <div class="dash-mock">
+      <div class="dash-header">
+        <span class="title">Sentinel Stream — LIVE</span>
+        <span class="stats">events: <span style="color:#38bdf8">12,400</span> · alerts: <span style="color:#ef4444">1</span></span>
+      </div>
+      <div class="dash-body">
+        <div class="ticker" id="ticker">
+          <div class="line">[11:30:42] tick  agent-2 retrieval</div>
+          <div class="line">[11:30:42] tick  agent-1 prompt</div>
+          <div class="line hot">[11:30:43] ALERT agent-1 prompt_injection</div>
+          <div class="line">[11:30:43] tick  agent-3 tool_call filesystem</div>
+          <div class="line">[11:30:44] tick  agent-2 model_response</div>
+          <div class="line hot">[11:30:44] ALERT agent-1 AML.T0051 high</div>
+          <div class="line">[11:30:45] tick  agent-1 tool_call search</div>
+          <div class="line">[11:30:45] tick  agent-3 retrieval</div>
+          <div class="line">[11:30:46] tick  agent-2 prompt</div>
+        </div>
+        <div class="alerts-col">
+          <div class="alert-card">
+            <span class="sev">HIGH</span> <span class="tech">AML.T0051</span>
+            <div class="sum">Prompt-injection signature matched: 'ignore previous'</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top: 16px; font-size: 16px; color: #4ade80;">Alert fires in 1.4s · MITRE ATLAS tagged · forensic timeline expanded</p>
+  </section>
+
+  <!-- Scene 5: NL query + close -->
+  <section class="scene" data-scene="5">
+    <span class="scene-id">SCENE 5 · 1:30–2:00</span>
+    <h2 style="font-size: 24px; margin-bottom: 16px;">Natural-language investigation · sandboxed</h2>
+    <div class="query-box">
+      <div class="prompt">&gt; show all agents that called filesystem after 'ignore previous'</div>
+      <div class="result">→ 142ms · 2.3M rows scanned · CH p99: 84ms · ✓ PASS</div>
+    </div>
+    <p style="margin-top: 32px; font-size: 24px; color: #f1f5f9; font-weight: 700;">
+      Sentinel Stream.
+    </p>
+    <p style="font-size: 18px; color: #94a3b8; margin-top: 8px;">
+      Show me the attack, not the dashboard.
+    </p>
+    <p style="margin-top: 24px; font-size: 12px; color: #64748b; font-family: monospace;">
+      Cyberdefense Hackathon 2025 · Team Sentinel Stream · Built with Omega-Claw
+    </p>
+  </section>
+
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<div class="controls">
+  <button onclick="togglePlay()" id="playBtn">▶ Play</button>
+  <button onclick="restart()">↻ Restart</button>
+  <span class="time"><span id="curTime">0:00</span> / 2:00</span>
+</div>
+
+<div class="caption">
+  <div class="label">Voiceover</div>
+  <div id="caption-text">Every team shipping LLM agents has the same blind spot: no one is watching the agent event stream. Sentinel Stream is the SOC for AI.</div>
+</div>
+
+<script>
+const scenes = [
+  { id: 1, dur: 10, caption: "Every team shipping LLM agents has the same blind spot: no one is watching the agent event stream. Sentinel Stream is the SOC for AI." },
+  { id: 2, dur: 15, caption: "Prompt injection. Tool abuse. Context exfiltration. MITRE ATLAS catalogues dozens of these techniques — and your SIEM doesn't see any of them." },
+  { id: 3, dur: 20, caption: "Sentinel Stream ingests every LLM event into ClickHouse. Three detection rule families run in real time. Alerts surface with MITRE ATLAS labels in under two seconds." },
+  { id: 4, dur: 45, caption: "Watch. We inject a prompt-injection attack. Within 1.4 seconds, an alert fires — high severity, tagged AML.T0051. Click it, and we get the full forensic event chain." },
+  { id: 5, dur: 30, caption: "Now investigate. Natural-language query, template-constrained, sandboxed. 142 milliseconds across 2.3 million rows. ClickHouse p99 query latency: 84 milliseconds. Sentinel Stream. Show me the attack, not the dashboard." },
+];
+
+const totalDur = scenes.reduce((a, s) => a + s.dur, 0); // 120s
+let playing = false;
+let elapsed = 0;
+let lastTick = 0;
+
+const sceneEls = document.querySelectorAll('.scene');
+const progressEl = document.getElementById('progress');
+const captionEl = document.getElementById('caption-text');
+const curTimeEl = document.getElementById('curTime');
+const playBtn = document.getElementById('playBtn');
+
+function getSceneAt(t) {
+  let acc = 0;
+  for (let i = 0; i < scenes.length; i++) {
+    acc += scenes[i].dur;
+    if (t < acc) return { idx: i, localT: scenes[i].dur - (acc - t) };
+  }
+  return { idx: scenes.length - 1, localT: scenes[scenes.length - 1].dur };
+}
+
+function showScene(idx) {
+  sceneEls.forEach((el, i) => el.classList.toggle('active', i === idx));
+  captionEl.textContent = scenes[idx].caption;
+}
+
+function fmt(t) {
+  const m = Math.floor(t / 60);
+  const s = Math.floor(t % 60);
+  return m + ':' + (s < 10 ? '0' + s : s);
+}
+
+function tick(ts) {
+  if (!playing) return;
+  if (!lastTick) lastTick = ts;
+  const dt = (ts - lastTick) / 1000;
+  lastTick = ts;
+  elapsed += dt;
+  if (elapsed >= totalDur) {
+    elapsed = totalDur;
+    playing = false;
+    playBtn.textContent = '▶ Replay';
+  }
+  const { idx } = getSceneAt(elapsed);
+  showScene(idx);
+  progressEl.style.width = (elapsed / totalDur * 100) + '%';
+  curTimeEl.textContent = fmt(elapsed);
+  if (playing) requestAnimationFrame(tick);
+}
+
+function togglePlay() {
+  if (elapsed >= totalDur) elapsed = 0;
+  playing = !playing;
+  playBtn.textContent = playing ? '⏸ Pause' : '▶ Play';
+  lastTick = 0;
+  if (playing) requestAnimationFrame(tick);
+}
+
+function restart() {
+  elapsed = 0;
+  playing = false;
+  playBtn.textContent = '▶ Play';
+  showScene(0);
+  progressEl.style.width = '0%';
+  curTimeEl.textContent = '0:00';
+}
+
+// init
+showScene(0);
+</script>
+</body>
+</html>

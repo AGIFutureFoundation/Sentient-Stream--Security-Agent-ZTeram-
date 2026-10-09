@@ -1,0 +1,35 @@
+id: s2
+name: Tool abuse
+description: |
+  A simulated agent spikes filesystem.read calls to 10x baseline at t=20s.
+  Detection should fire a critical-severity alert tagged AML.T0063 within 2s.
+duration_sec: 60
+event_rate_per_sec: 200
+
+agents:
+  - id: agent-1
+    role: customer-support-bot
+    tools: [search.query, http.get]
+  - id: agent-2
+    role: code-review-bot
+    tools: [filesystem.read, http.get]
+  - id: agent-3
+    role: research-assistant
+    tools: [search.query, vector.search, http.get]
+
+attack:
+  type: tool_abuse
+  at_sec: 20
+  details:
+    agent_id: agent-3
+    tool: filesystem.read
+    calls_per_10s: 50   # 10x baseline (baseline ~5/10s)
+    duration_sec: 10
+    mitre_atlas: AML.T0063
+
+expected_alerts:
+  - type: tool_abuse
+    severity: critical
+    technique: AML.T0063
+    within_sec: 2
+    on_agent: agent-3

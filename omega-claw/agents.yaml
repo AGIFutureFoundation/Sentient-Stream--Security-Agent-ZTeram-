@@ -1,0 +1,106 @@
+# Claw agent definitions for the Omega-Claw framework.
+# Each claw has one specialty, one metaprompt, and owns a set of paths.
+# Omega dispatches tasks to claws based on the 'claw' field in the task DAG.
+
+claws:
+  - name: claw-data
+    role: Data & storage engineer
+    specialty: ClickHouse schema, ingestion, materialized views, load testing
+    metaprompt: code-builder
+    model: openai/gpt-4o-mini
+    owns:
+      - src/sentinel/clickhouse_schema.sql
+      - src/sentinel/ingest.py
+    console: omega-claw/consoles/claw-data.md
+
+  - name: claw-detection
+    role: Detection engineer
+    specialty: Detection rules, alert writer, MITRE ATLAS tagging
+    metaprompt: code-builder
+    model: openai/gpt-4o-mini
+    owns:
+      - src/sentinel/detect.py
+      - src/sentinel/alert.py
+    console: omega-claw/consoles/claw-detection.md
+
+  - name: claw-ui
+    role: Frontend & API engineer
+    specialty: FastAPI endpoints, HTMX dashboard, SSE, NL query box
+    metaprompt: code-builder
+    model: openai/gpt-4o-mini
+    owns:
+      - src/sentinel/api.py
+      - src/sentinel/nl_query.py
+      - src/dashboard/
+    console: omega-claw/consoles/claw-ui.md
+
+  - name: claw-evals
+    role: Evals engineer
+    specialty: Attack datasets, scenarios, runner, metrics
+    metaprompt: eval-builder
+    model: openai/gpt-4o-mini
+    owns:
+      - evals/
+    console: omega-claw/consoles/claw-evals.md
+
+  # NEW: Pentest claw — drives the hacker-bob MCP runtime headlessly
+  # against built artifacts, emits findings + ASFF evidence packs.
+  # See INTEGRATION.md §1 (claw-pentest) for full design.
+  - name: claw-pentest
+    role: Offensive security evaluator
+    specialty: Drives hacker-bob MCP runtime headlessly against built artifacts; produces graded findings + ASFF exports
+    metaprompt: attack-simulator
+    model: openai/gpt-4o-mini   # bob needs a tool-calling model; litellm routes
+    owns:
+      - omega-claw/consoles/claw-pentest.md
+      - evals/results/pentest/
+    bob_runner: infra/runner/agentcore-entrypoint.py
+    bob_mcp_server: mcp/server.js
+    bob_session_root: ~/hacker-bob-sessions
+    console: omega-claw/consoles/claw-pentest.md
+
+  # NEW (v0.5.0): Vulnscanner claw — finds vulnerabilities in code
+  - name: claw-vulnscanner
+    role: Defensive code security analyzer
+    specialty: Scans code repositories for vulnerabilities using static patterns + LLM-assisted deep analysis. Outputs findings with CWE, MITRE technique, and fix recommendations.
+    metaprompt: code-builder
+    model: openai/gpt-4o-mini
+    owns:
+      - omega-claw/claw_vulnscanner.py
+      - omega-claw/consoles/claw-vulnscanner.md
+    console: omega-claw/consoles/claw-vulnscanner.md
+
+  # NEW (v0.5.0): Evolution claw — self-modifies the detection engine
+  - name: claw-evolution
+    role: Self-evolution engine
+    specialty: Observes unlabeled high-risk events, clusters them, proposes new detection rules via LLM, evaluates candidates against eval datasets, and activates passing rules (with safety rails).
+    metaprompt: code-builder
+    model: openai/gpt-4o-mini
+    owns:
+      - src/sentinel/evolution.py
+      - omega-claw/consoles/claw-evolution.md
+    console: omega-claw/consoles/claw-evolution.md
+
+# Omega itself is not a claw — it's the orchestrator. Listed here for reference.
+orchestrator:
+  name: omega
+  role: Build orchestrator
+  specialty: Task decomposition, dispatch, review
+  metaprompt: task-decomposer
+  console: omega-claw/consoles/omega.md
+
+# External integrations (referenced by claws but not owned by them)
+integrations:
+  hacker_bob:
+    repo: https://github.com/AGIFutureFoundation/hacker-bob
+    upstream: https://github.com/vmihalis/hacker-bob
+    version: ">=2.1.0"
+    license: Apache-2.0
+    role_in_pipeline: offensive runtime — attacks LLM agents Sentinel Stream defends
+    transport: MCP stdio (JSON-RPC over subprocess pipes)
+    python_entrypoint: infra/runner/agentcore-entrypoint.py
+    cli: hacker-bob
+    install_cmd: npm install --global hacker-bob@latest
+    env:
+      BOB_MCP_CALLER_TOKEN: ""   # 64-hex per-invocation token, minted by agentcore-entrypoint
+      BOB_AGENTCORE: "1"          # enables headless mode

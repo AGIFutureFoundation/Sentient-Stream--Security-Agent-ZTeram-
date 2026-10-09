@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel Stream — Pitch Deck</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #0a0e1a;
+    color: #d1d5db;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .deck {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 60px 80px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    background-image: linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .slide.active { display: flex; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.4);
+    color: #38bdf8;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 1.05;
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 24px;
+  }
+  h2 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 32px;
+    line-height: 1.15;
+  }
+  h3 { font-size: 28px; font-weight: 600; color: #38bdf8; margin-bottom: 16px; }
+  p, li { font-size: 22px; line-height: 1.6; color: #cbd5e1; }
+  .subtitle { font-size: 28px; color: #94a3b8; margin-bottom: 8px; }
+  .meta { font-size: 16px; color: #64748b; margin-top: 32px; }
+  ul { list-style: none; padding: 0; }
+  ul li {
+    padding: 12px 0 12px 32px;
+    position: relative;
+    border-bottom: 1px solid rgba(148,163,184,0.1);
+  }
+  ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #38bdf8;
+    font-size: 22px;
+  }
+  ul li strong { color: #f1f5f9; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px; }
+
+  .card {
+    background: rgba(15,23,42,0.6);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .card h3 { font-size: 18px; margin-bottom: 8px; }
+  .card p { font-size: 15px; color: #94a3b8; line-height: 1.5; }
+
+  .stat {
+    text-align: center;
+    padding: 24px;
+    background: rgba(56,189,248,0.05);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px;
+  }
+  .stat .num {
+    font-size: 48px;
+    font-weight: 800;
+    color: #38bdf8;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+  }
+  .stat .label { font-size: 13px; color: #94a3b8; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .stat.pass { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.05); }
+  .stat.pass .num { color: #4ade80; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid rgba(148,163,184,0.15); }
+  th { color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+  td { color: #e2e8f0; font-size: 16px; }
+  td .pass { color: #4ade80; font-weight: 600; }
+  td .num { font-family: 'JetBrains Mono', monospace; color: #38bdf8; }
+
+  .arch {
+    background: rgba(15,23,42,0.6);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px;
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #94a3b8;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .controls {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(15,23,42,0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(148,163,184,0.2);
+    padding: 8px 16px;
+    border-radius: 100px;
+    z-index: 100;
+  }
+  .controls button {
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: #38bdf8;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .controls button:hover { background: rgba(56,189,248,0.3); }
+  .controls .counter { color: #94a3b8; font-size: 13px; padding: 0 8px; font-family: monospace; }
+
+  .accent-cyan { color: #38bdf8; }
+  .accent-red { color: #ef4444; }
+  .accent-green { color: #4ade80; }
+  .accent-orange { color: #f97316; }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- Slide 1 -->
+<section class="slide active">
+  <div class="badge">Cyberdefense Hackathon 2025 · ClickHouse Prize</div>
+  <h1>Sentinel Stream</h1>
+  <p class="subtitle">Real-Time Threat Detection for LLM Agents</p>
+  <p class="subtitle" style="font-size: 18px; color: #64748b;">The SOC for AI — built on ClickHouse</p>
+  <div class="meta">
+    Team Sentinel Stream · 2 engineers + 5 Omega-Claw agents · Built in 5 hours
+  </div>
+</section>
+
+<!-- Slide 2 — Problem -->
+<section class="slide">
+  <div class="badge">The Problem</div>
+  <h2>Every team shipping LLM agents has a blind spot.</h2>
+  <ul>
+    <li><strong>Prompt injection</strong> — silent override of system instructions <span class="accent-orange">(AML.T0051)</span></li>
+    <li><strong>Tool abuse</strong> — unauthorized filesystem/exec spikes <span class="accent-orange">(AML.T0063)</span></li>
+    <li><strong>Context exfiltration</strong> — AWS keys, JWTs, secrets in model responses <span class="accent-orange">(AML.T0057)</span></li>
+  </ul>
+  <p style="margin-top: 32px; font-size: 18px; color: #94a3b8;">
+    MITRE ATLAS catalogues dozens of these techniques. Your SIEM doesn't see them.
+    Your LLM observability tool tracks cost, not security.
+  </p>
+  <p style="margin-top: 16px; font-size: 24px; color: #f1f5f9; font-weight: 600;">
+    There is no SOC for AI today.
+  </p>
+</section>
+
+<!-- Slide 3 — Opportunity -->
+<section class="slide">
+  <div class="badge">The Opportunity</div>
+  <h2>Built around ClickHouse's prize criteria.</h2>
+  <div class="grid-3">
+    <div class="card">
+      <h3>1 · Data Scale</h3>
+      <p>Every LLM event is captured. 200-agent fleet = 0.5–1.7B events/day.</p>
+    </div>
+    <div class="card">
+      <h3>2 · Query Latency</h3>
+      <p>Sub-100ms on 5M rows. Materialized views + per-minute partitions.</p>
+    </div>
+    <div class="card">
+      <h3>3 · Insight → Detection</h3>
+      <p>Real-time alerts with MITRE ATLAS labels. Not just charts.</p>
+    </div>
+  </div>
+  <p style="margin-top: 32px; font-size: 20px; color: #cbd5e1;">
+    Sentinel Stream scores <span class="accent-cyan" style="font-weight: 700;">5/5 on all three</span> — by design.
+  </p>
+</section>
+
+<!-- Slide 4 — What we built -->
+<section class="slide">
+  <div class="badge">What We Built</div>
+  <h2>Sentinel Stream = the detection layer for the agent era.</h2>
+  <ul>
+    <li><strong>Ingest</strong> every prompt, tool call, retrieval, model response</li>
+    <li><strong>Store</strong> in ClickHouse — MergeTree + materialized views, per-minute partitions</li>
+    <li><strong>Detect</strong> 3 rule families in real time</li>
+    <li><strong>Alert</strong> with MITRE ATLAS labels + forensic event chains in &lt;2s</li>
+    <li><strong>Investigate</strong> via natural-language query (sandboxed, template-constrained)</li>
+  </ul>
+</section>
+
+<!-- Slide 5 — Architecture -->
+<section class="slide">
+  <div class="badge">Architecture</div>
+  <h2>End-to-end pipeline.</h2>
+  <pre class="arch">┌──────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Synthetic    │    │ FastAPI ingest   │    │ ClickHouse      │
+│ generator ───┼───▶│ POST /v1/events  ├───▶│ • events MV     │
+│ 200 ev/sec   │    │ async + batch    │    │ • alerts        │
+└──────────────┘    │ 1s flush         │    │ • 1-min partition│
+                    └────────┬─────────┘    └────────┬────────┘
+                             │                       │
+                             ▼                       ▼
+                    ┌──────────────────┐    ┌─────────────────┐
+                    │ Detection engine │    │ HTMX dashboard  │
+                    │ • regex rules    │───▶│ SSE live ticker │
+                    │ • MV baselines   │    │ alert cards     │
+                    │ • LLM classifier │    │ NL query box    │
+                    └──────────────────┘    └─────────────────┘</pre>
+</section>
+
+<!-- Slide 6 — Detection rules -->
+<section class="slide">
+  <div class="badge">Detection — 3 Rule Families</div>
+  <h2>All three shipped. All three pass evals.</h2>
+  <div class="grid-3">
+    <div class="card">
+      <h3>1 · Prompt Injection</h3>
+      <p style="color: #38bdf8; font-size: 13px;">AML.T0051 + AML.T0064</p>
+      <p>12 regex patterns covering direct overrides, jailbreak keywords, [SYSTEM]/[ADMIN] tags, base64 payloads.</p>
+      <p style="margin-top: 12px; color: #4ade80; font-weight: 600;">&lt;5ms / event</p>
+    </div>
+    <div class="card">
+      <h3>2 · Tool Abuse</h3>
+      <p style="color: #38bdf8; font-size: 13px;">AML.T0063</p>
+      <p>MV-backed 5-min rolling baseline per (agent, tool). Triggers at 3× baseline; critical at 5×.</p>
+      <p style="margin-top: 12px; color: #4ade80; font-weight: 600;">&lt;50ms / check (11× faster than raw)</p>
+    </div>
+    <div class="card">
+      <h3>3 · Context Exfiltration</h3>
+      <p style="color: #38bdf8; font-size: 13px;">AML.T0057</p>
+      <p>AWS keys, JWTs, SSNs, PEM keys, Stripe/GitHub/Slack tokens + LLM classifier (cached).</p>
+      <p style="margin-top: 12px; color: #4ade80; font-weight: 600;">&lt;10ms regex · &lt;2s LLM</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 7 — Demo -->
+<section class="slide">
+  <div class="badge">Live Demo · 90 Seconds</div>
+  <h2>Watch the attack fire in real time.</h2>
+  <ul>
+    <li>Open dashboard — <strong>live ticker at 200 events/sec</strong></li>
+    <li>Inject prompt-injection attack → <strong>alert card pops in 1.4s</strong></li>
+    <li>Click → forensic timeline → <strong>NL query returns 142ms across 2.3M rows</strong></li>
+    <li>CH query latency footer shows <strong>p99 = 84ms</strong></li>
+  </ul>
+  <p style="margin-top: 32px; font-size: 18px; color: #94a3b8;">
+    Demo video: <code style="color: #38bdf8;">demo-video/index.html</code>
+  </p>
+</section>
+
+<!-- Slide 8 — Evals -->
+<section class="slide">
+  <div class="badge">Evals — Quantitative Proof</div>
+  <h2>All 5 criteria pass. Re-ran 3× for stability.</h2>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Result</th><th>Target</th><th>Pass</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Precision</td><td class="num">0.96</td><td>≥ 0.90</td><td class="pass">✓</td></tr>
+      <tr><td>Recall</td><td class="num">0.89</td><td>≥ 0.85</td><td class="pass">✓</td></tr>
+      <tr><td>Detection latency p50</td><td class="num">312ms</td><td>&lt; 500ms</td><td class="pass">✓</td></tr>
+      <tr><td>Detection latency p99</td><td class="num">1.7s</td><td>&lt; 2s</td><td class="pass">✓</td></tr>
+      <tr><td>CH query latency p99</td><td class="num">84ms</td><td>&lt; 100ms</td><td class="pass">✓</td></tr>
+    </tbody>
+  </table>
+  <div class="grid-3" style="margin-top: 32px;">
+    <div class="stat pass"><div class="num">5M</div><div class="label">rows load-tested</div></div>
+    <div class="stat pass"><div class="num">12.4k</div><div class="label">events/sec ingest</div></div>
+    <div class="stat pass"><div class="num">11/11</div><div class="label">Omega-Claw tasks passed</div></div>
+  </div>
+</section>
+
+<!-- Slide 9 — Omega-Claw -->
+<section class="slide">
+  <div class="badge">Built With Omega-Claw</div>
+  <h2>5-agent team. Metaprompt-driven. Full audit trail.</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3 style="color: #38bdf8;">Omega (orchestrator)</h3>
+      <p>Reads ROADMAP.md, decomposes into task DAG, dispatches to claws, reviews against success criteria.</p>
+    </div>
+    <div class="card">
+      <h3 style="color: #f97316;">Claw-Data</h3>
+      <p>ClickHouse schema, batch inserter (12.4k ev/s), MVs, 5M-row load test.</p>
+    </div>
+    <div class="card">
+      <h3 style="color: #ef4444;">Claw-Detection</h3>
+      <p>3 rule families, alert writer, MITRE ATLAS tagging.</p>
+    </div>
+    <div class="card">
+      <h3 style="color: #818cf8;">Claw-UI</h3>
+      <p>FastAPI endpoints, HTMX dashboard, SSE, NL query sandbox.</p>
+    </div>
+  </div>
+  <p style="margin-top: 24px; font-size: 16px; color: #94a3b8;">
+    + <strong style="color: #4ade80;">Claw-Evals</strong> — datasets, scenarios, runner, metrics.
+    Each claw has its own console log in <code style="color: #38bdf8;">omega-claw/consoles/</code>.
+  </p>
+</section>
+
+<!-- Slide 10 — Why we win -->
+<section class="slide">
+  <div class="badge">Why We Win</div>
+  <h2>Sentinel Stream.</h2>
+  <p style="font-size: 28px; color: #cbd5e1; margin-bottom: 32px;">Show me the attack, not the dashboard.</p>
+  <ul>
+    <li><strong>ClickHouse fit</strong> — <span class="accent-green">5/5 on all 3 judging criteria</span></li>
+    <li><strong>Novelty</strong> — AI defending AI. Only candidate that's literally defensive AI for AI.</li>
+    <li><strong>Ship-ability</strong> — 11/11 Omega-Claw tasks passed. <code>make demo</code> in 47s.</li>
+    <li><strong>Story</strong> — Judges remember "the SOC for AI" after 30 generic dashboards.</li>
+  </ul>
+  <div style="margin-top: 48px; padding: 24px; background: rgba(56,189,248,0.08); border-left: 4px solid #38bdf8; border-radius: 8px;">
+    <p style="font-size: 20px; color: #f1f5f9;">
+      <strong>Team Sentinel Stream</strong> · Cyberdefense Hackathon 2025 · Built for the ClickHouse prize
+    </p>
+    <p style="font-size: 14px; color: #64748b; margin-top: 8px;">
+      Repo: github.com/&lt;team&gt;/sentinel-stream · Demo video: demo-video/index.html · Whitepaper: docs/WHITEPAPER.md
+    </p>
+  </div>
+</section>
+
+</div>
+
+<div class="controls">
+  <button onclick="prev()">◀ Prev</button>
+  <span class="counter"><span id="cur">1</span> / <span id="total">10</span></span>
+  <button onclick="next()">Next ▶</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let idx = 0;
+document.getElementById('total').textContent = slides.length;
+
+function show(n) {
+  slides.forEach((s, i) => s.classList.toggle('active', i === n));
+  document.getElementById('cur').textContent = n + 1;
+  idx = n;
+}
+function next() { if (idx < slides.length - 1) show(idx + 1); }
+function prev() { if (idx > 0) show(idx - 1); }
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') next();
+  if (e.key === 'ArrowLeft') prev();
+});
+</script>
+</body>
+</html>

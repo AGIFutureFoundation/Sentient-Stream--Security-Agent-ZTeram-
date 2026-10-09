@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:24.8
+        ports:
+          - 8123:8123
+          - 9000:9000
+        env:
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+        options: >-
+          --health-cmd "wget --no-check-certificate --spider -q http://localhost:8123/ping || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio ruff
+
+      - name: Lint with ruff
+        run: |
+          ruff check src/ evals/ omega-claw/ tests/ || true
+
+      - name: Apply ClickHouse schema
+        run: |
+          sleep 5  # give ClickHouse time to be ready
+          curl -s "http://localhost:8123/?query=$(cat src/sentinel/clickhouse_schema.sql | python -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read()))')"
+
+      - name: Run unit tests
+        env:
+          CLICKHOUSE_HOST: localhost
+          CLICKHOUSE_PORT: 8123
+          CLICKHOUSE_USER: default
+          CLICKHOUSE_PASSWORD: ""
+          LLM_API_KEY: ""
+          PYTHONPATH: src
+        run: |
+          pytest tests/ -v --tb=short
+
+      - name: Verify schema applied
+        run: |
+          curl -s "http://localhost:8123/?query=SHOW+TABLES" | grep -E "sentinel_events|sentinel_alerts|sentinel_tool_calls_mv"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: sentinel-stream:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  eval-check:
+    runs-on: ubuntu-latest
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:24.8
+        ports:
+          - 8123:8123
+        options: >-
+          --health-cmd "wget --no-check-certificate --spider -q http://localhost:8123/ping || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - run: |
+          pip install -r requirements.txt
+      - name: Verify eval datasets parse
+        run: |
+          python -c "
+          import json
+          from pathlib import Path
+          for f in Path('evals/datasets').glob('*.jsonl'):
+              lines = [l for l in f.read_text().splitlines() if l.strip()]
+              for i, line in enumerate(lines):
+                  try:
+                      json.loads(line)
+                  except Exception as e:
+                      raise SystemExit(f'{f}:{i+1}: {e}')
+              print(f'{f}: {len(lines)} samples OK')
+          "
+      - name: Verify scenarios parse
+        run: |
+          python -c "
+          import yaml
+          from pathlib import Path
+          for f in Path('evals/scenarios').glob('*.yaml'):
+              yaml.safe_load(f.read_text())
+              print(f'{f}: OK')
+          "

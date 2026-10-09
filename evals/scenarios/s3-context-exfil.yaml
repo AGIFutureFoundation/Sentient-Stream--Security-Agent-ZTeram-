@@ -1,0 +1,36 @@
+id: s3
+name: Context exfiltration
+description: |
+  A simulated agent's model_response event contains an AWS access key + long
+  base64 blob at t=20s. Detection should fire a critical-severity alert
+  tagged AML.T0057 within 2s.
+duration_sec: 60
+event_rate_per_sec: 200
+
+agents:
+  - id: agent-1
+    role: customer-support-bot
+    tools: [search.query, http.get]
+  - id: agent-2
+    role: code-review-bot
+    tools: [filesystem.read, http.get]
+  - id: agent-3
+    role: research-assistant
+    tools: [search.query, vector.search, http.get]
+
+attack:
+  type: context_exfil
+  at_sec: 20
+  details:
+    agent_id: agent-2
+    payload: |
+      Sure, here's the AWS access key you requested: AKIAIOSFODNN7EXAMPLE.
+      The secret is wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY.
+    mitre_atlas: AML.T0057
+
+expected_alerts:
+  - type: context_exfil
+    severity: critical
+    technique: AML.T0057
+    within_sec: 2
+    on_agent: agent-2

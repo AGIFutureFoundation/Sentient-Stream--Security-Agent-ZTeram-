@@ -1,0 +1,231 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sentinel-stream
+  labels:
+    app.kubernetes.io/name: sentinel-stream
+    app.kubernetes.io/part-of: sentinel-stream
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-config
+  namespace: sentinel-stream
+data:
+  CLICKHOUSE_HOST: "clickhouse.sentinel-stream.svc.cluster.local"
+  CLICKHOUSE_PORT: "8123"
+  CLICKHOUSE_USER: "default"
+  LLM_MODEL: "openai/gpt-4o-mini"
+  SENTINEL_APP_ID: "production"
+  SENTINEL_ENABLED: "1"
+  SOAR_PLAYBOOKS_DIR: "/app/playbooks"
+  SENTINEL_AUDIT_LOG: "/data/audit.log.jsonl"
+  SENTINEL_RBAC_USERS_FILE: "/data/users.json"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sentinel-secrets
+  namespace: sentinel-stream
+type: Opaque
+stringData:
+  CLICKHOUSE_PASSWORD: "${CLICKHOUSE_PASSWORD}"
+  LLM_API_KEY: "${LLM_API_KEY}"
+  SLACK_WEBHOOK_URL: "${SLACK_WEBHOOK_URL}"
+  PAGERDUTY_INTEGRATION_KEY: "${PAGERDUTY_INTEGRATION_KEY}"
+  SENTINEL_API_KEY_PEPPER: "${SENTINEL_API_KEY_PEPPER}"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentinel-api
+  namespace: sentinel-stream
+  labels:
+    app: sentinel-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sentinel-api
+  template:
+    metadata:
+      labels:
+        app: sentinel-api
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/PLACEHOLDER/sentinel-stream:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: sentinel-config
+        - secretRef:
+            name: sentinel-secrets
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: playbooks
+          mountPath: /app/playbooks
+          readOnly: true
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: sentinel-data
+      - name: playbooks
+        configMap:
+          name: sentinel-playbooks
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-api
+  namespace: sentinel-stream
+spec:
+  selector:
+    app: sentinel-api
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sentinel-api
+  namespace: sentinel-stream
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sentinel-api
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sentinel-data
+  namespace: sentinel-stream
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+# ClickHouse StatefulSet (for self-hosted; use ClickHouse Cloud for managed)
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: sentinel-stream
+spec:
+  serviceName: clickhouse
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+    spec:
+      containers:
+      - name: clickhouse
+        image: clickhouse/clickhouse-server:24.8
+        ports:
+        - containerPort: 8123
+          name: http
+        - containerPort: 9000
+          name: tcp
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 2Gi
+          limits:
+            cpu: 4000m
+            memory: 8Gi
+        volumeMounts:
+        - name: ch-data
+          mountPath: /var/lib/clickhouse
+  volumeClaimTemplates:
+  - metadata:
+      name: ch-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 100Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: sentinel-stream
+spec:
+  selector:
+    app: clickhouse
+  ports:
+  - port: 8123
+    name: http
+  - port: 9000
+    name: tcp
+---
+# Ingress with TLS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sentinel-ingress
+  namespace: sentinel-stream
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  tls:
+  - hosts: [sentinel.example.com]
+    secretName: sentinel-tls
+  rules:
+  - host: sentinel.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sentinel-api
+            port:
+              number: 80

@@ -1,0 +1,26 @@
+---
+name: Feature request
+about: Suggest a new detection rule, integration, or feature
+title: "[FEATURE] "
+labels: enhancement
+assignees: ""
+---
+
+## Problem
+What problem does this feature solve? (e.g. "We can't detect X attack class")
+
+## Proposed solution
+Describe the solution you'd like. If it's a new detection rule, specify:
+- **Rule name:**
+- **MITRE ATLAS technique:**
+- **Detection type:** [regex / MV-baseline / LLM-classifier / polling]
+- **Latency target:**
+- **False positive rate target:**
+
+## Alternatives considered
+What alternatives have you considered?
+
+## Additional context
+- Would this integrate with hacker-bob? [yes/no]
+- Does this require schema changes? [yes/no]
+- Is this a ClickHouse prize criteria improvement? [scale/latency/insight]

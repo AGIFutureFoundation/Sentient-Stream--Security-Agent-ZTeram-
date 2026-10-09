@@ -1,0 +1,21 @@
+# SOAR Playbook: Prompt injection — high severity
+# Triggered when a prompt_injection alert fires with high severity.
+
+id: pb-prompt-injection-high
+name: Prompt Injection — High Severity Response
+description: |
+  Auto-responds to high-severity prompt-injection alerts (AML.T0051).
+  Notifies Slack SOC channel and logs to audit trail. Does not isolate
+  the agent (single failed injection is not necessarily a compromise).
+enabled: true
+cooldown_sec: 600
+
+trigger:
+  alert_type: [prompt_injection]
+  severity: [high]
+
+actions:
+  - type: slack_notify
+    args:
+      channel: "#soc-alerts"
+  - type: log_only

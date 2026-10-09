@@ -1,0 +1,31 @@
+# SOAR Playbook: Critical context exfiltration
+# Triggered when a context_exfil alert with critical severity fires.
+# Actions: notify Slack + page on-call + isolate the agent + create a P1 ticket.
+
+id: pb-context-exfil-critical
+name: Context Exfiltration — Critical Response
+description: |
+  Auto-responds to critical context-exfiltration alerts (AML.T0057).
+  Notifies Slack, pages on-call via PagerDuty, isolates the offending agent,
+  and creates a P1 incident ticket.
+enabled: true
+cooldown_sec: 300  # don't re-trigger for same agent within 5 min
+
+trigger:
+  alert_type: [context_exfil, untrusted_envelope_injection]
+  severity: [critical]
+
+actions:
+  - type: slack_notify
+    args:
+      channel: "#soc-critical"
+  - type: pagerduty_alert
+    args:
+      severity: critical
+  - type: isolate_agent
+  - type: jira_create_ticket
+    args:
+      project: SEC
+      issue_type: Incident
+      priority: P1
+      assignee: soc-team

@@ -1,0 +1,40 @@
+---
+name: Bug report
+about: Report a bug in Sentinel Stream
+title: "[BUG] "
+labels: bug
+assignees: ""
+---
+
+## Describe the bug
+A clear and concise description of what the bug is.
+
+## To reproduce
+Steps to reproduce the behavior:
+1. Run `...`
+2. See error
+
+## Expected behavior
+What you expected to happen.
+
+## Actual behavior
+What actually happened (logs, screenshots, alert output).
+
+## Environment
+- Sentinel Stream version: [e.g. v0.3.0]
+- ClickHouse version: [e.g. 24.8]
+- Python version: [e.g. 3.12]
+- OS: [e.g. Ubuntu 22.04]
+- hacker-bob installed: [yes/no]
+- LLM provider + model: [e.g. openai/gpt-4o-mini]
+
+## Detection rule affected (if any)
+- [ ] prompt_injection (rule 1)
+- [ ] tool_abuse (rule 2)
+- [ ] context_exfil (rule 3)
+- [ ] untrusted_envelope_injection (rule 4)
+- [ ] belief_drift (rule 5)
+- [ ] other (ingest, alert, dashboard, NL query)
+
+## Additional context
+Add any other context about the problem here.

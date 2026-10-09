@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: sentinel-clickhouse
+    ports:
+      - "8123:8123"   # HTTP
+      - "9000:9000"   # native TCP
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./src/sentinel/clickhouse_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentinel-api
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    environment:
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PORT: 8123
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+    ports:
+      - "8000:8000"
+    command: uvicorn src.sentinel.api:app --host 0.0.0.0 --port 8000 --workers 1
+
+  generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentinel-generator
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      SENTINEL_API_URL: http://api:8000
+      EVENT_RATE_PER_SEC: ${EVENT_RATE_PER_SEC:-200}
+      ATTACK_INTERVAL_SEC: ${ATTACK_INTERVAL_SEC:-90}
+    command: python -m src.generator.workload --duration 0  # 0 = run forever
+
+volumes:
+  clickhouse-data:

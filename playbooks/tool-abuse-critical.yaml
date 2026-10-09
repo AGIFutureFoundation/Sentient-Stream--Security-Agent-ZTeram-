@@ -1,0 +1,25 @@
+# SOAR Playbook: Tool abuse — critical
+# Triggered when tool_abuse fires at critical (5x+ baseline).
+
+id: pb-tool-abuse-critical
+name: Tool Abuse Spike — Critical Response
+description: |
+  Auto-responds to critical tool-abuse alerts (AML.T0063).
+  Isolates the agent immediately, notifies Slack, creates a ticket.
+enabled: true
+cooldown_sec: 180
+
+trigger:
+  alert_type: [tool_abuse]
+  severity: [critical]
+
+actions:
+  - type: isolate_agent
+  - type: slack_notify
+    args:
+      channel: "#soc-critical"
+  - type: jira_create_ticket
+    args:
+      project: SEC
+      issue_type: Incident
+      priority: P1
